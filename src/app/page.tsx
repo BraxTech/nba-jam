@@ -9,11 +9,8 @@ import Roster from '@/app/components/Roster';
 export default function HomePage() {
 	const [selectedTeam, setSelectedTeam] = useState<string | null>(null);
 	const [isRosterChanging, setIsRosterChanging] = useState(false);
-	const { data: teams, loading } = useFetch(getTeams);
+	const { data: teams, loading, error } = useFetch(getTeams);
 
-	if (loading) return <p>Loading...</p>;
-
-	// Group teams by division
 	const divisions = teams?.reduce((acc: any, team: any) => {
 		if (!acc[team.division]) {
 			acc[team.division] = [];
@@ -22,18 +19,33 @@ export default function HomePage() {
 		return acc;
 	}, {});
 
+	if (error) {
+		return (
+			<div className='p-4 text-red-500'>
+				Error loading teams: {error.message}
+			</div>
+		);
+	}
+
+	if (!loading && !divisions) {
+		return (
+			<div className='p-4 text-white'>
+				No teams data available. Please try again later.
+			</div>
+		);
+	}
+
 	const handleTeamClick = (teamName: string) => {
 		if (selectedTeam !== teamName) {
 			setIsRosterChanging(true);
 			setSelectedTeam(teamName);
-			// Reset the changing state after a brief delay
 			setTimeout(() => setIsRosterChanging(false), 100);
 		}
 	};
 
 	return (
 		<div className='p-4 sm:p-6 md:p-8'>
-			<h1 className='text-xl sm:text-2xl font-bold mb-4 text-center text-marigold'>
+			<h1 className='text-xl sm:text-2xl font-bold mb-4 text-white'>
 				NBA Team Stats
 			</h1>
 			<div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'>
@@ -42,19 +54,26 @@ export default function HomePage() {
 					  [...Array(6)].map((_, index) => (
 							<div
 								key={index}
-								className='bg-gray-800 rounded-lg p-4 shadow-lg animate-pulse'>
-								<div className='h-6 bg-gray-700 rounded w-48 mb-4'></div>
+								className='bg-gray-800 rounded-lg p-4 shadow-lg'>
+								<div className='h-6 bg-gray-700 rounded w-48 mb-4 animate-pulse'></div>
 								<div className='space-y-4'>
 									{[...Array(5)].map((_, teamIndex) => (
 										<div
 											key={teamIndex}
-											className='h-12 bg-gray-700 rounded'></div>
+											className='relative'>
+											<div className='w-full bg-gray-900 rounded-lg overflow-hidden'>
+												<div className='flex justify-between items-center p-3'>
+													<div className='h-6 bg-gray-700 rounded w-40 animate-pulse'></div>
+													<div className='h-6 bg-gray-700 rounded w-16 animate-pulse'></div>
+												</div>
+											</div>
+										</div>
 									))}
 								</div>
 							</div>
 					  ))
-					: divisions &&
-					  Object.entries(divisions).map(
+					: divisions
+					? Object.entries(divisions).map(
 							([division, divisionTeams]: [string, any]) => (
 								<div
 									key={division}
@@ -77,7 +96,8 @@ export default function HomePage() {
 									</div>
 								</div>
 							)
-					  )}
+					  )
+					: null}
 			</div>
 
 			{selectedTeam && (

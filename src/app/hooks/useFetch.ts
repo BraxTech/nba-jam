@@ -10,10 +10,11 @@ export function useFetch<T>(fetchFn: () => Promise<T>) {
 	useEffect(() => {
 		const fetchData = async () => {
 			try {
+				setLoading(true);
 				const result = await fetchFn();
 				setData(result);
-			} catch (e) {
-				setError(e as Error);
+			} catch (err) {
+				setError(err as Error);
 			} finally {
 				setLoading(false);
 			}

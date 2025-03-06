@@ -3,12 +3,6 @@ import axios from 'axios';
 const BASE_URL = 'https://api.balldontlie.io/v1';
 const API_KEY = process.env.NEXT_PUBLIC_BALL_DONT_LIE_API_KEY;
 
-if (!API_KEY) {
-	console.warn('API key is missing!');
-} else {
-	console.log('API key length:', API_KEY.length);
-}
-
 const teamRecords: { [key: string]: { wins: number; losses: number } } = {
 	Bucks: { wins: 58, losses: 24 },
 	Celtics: { wins: 57, losses: 25 },
@@ -109,7 +103,6 @@ export const teamColors: {
 	'Utah Jazz': { primary: '#002B5C', secondary: '#00471B' },
 	'Washington Wizards': { primary: '#002B5C', secondary: '#E31837' },
 };
-console.log(API_KEY);
 export async function getTeams() {
 	if (!API_KEY) {
 		throw new Error('API key is required');
