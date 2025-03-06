@@ -115,27 +115,44 @@ export async function getTeamRoster(teamName: string) {
 	}
 
 	try {
-		const headers: HeadersInit = {
-			Authorization: API_KEY,
-		};
-
-		const response = await fetch(`${BASE_URL}/players?per_page=100`, {
+		// First get the team ID
+		const teamsResponse = await fetch(`${BASE_URL}/teams`, {
 			method: 'GET',
-			headers,
+			headers: { Authorization: API_KEY },
 		});
 
-		if (response.status === 429) {
-			throw new Error('Rate limit exceeded. Please try again later.');
+		const teamsData = await teamsResponse.json();
+		const team = teamsData.data.find((t: any) => t.full_name === teamName);
+
+		if (!team) {
+			throw new Error('Team not found');
 		}
+
+		// Then get players for that team
+		const response = await fetch(
+			`${BASE_URL}/players?team_ids[]=${team.id}&per_page=100`,
+			{
+				method: 'GET',
+				headers: { Authorization: API_KEY },
+			}
+		);
 
 		if (!response.ok) {
 			throw new Error(`Failed to fetch roster: ${response.status}`);
 		}
 
 		const data = await response.json();
-		return data.data.filter(
-			(player: any) => player.team.full_name === teamName
-		);
+		return data.data
+			.filter((player: any) => player.position !== '')
+			.map((player: any) => ({
+				id: player.id,
+				first_name: player.first_name,
+				last_name: player.last_name,
+				position: player.position,
+				height_feet: player.height_feet,
+				height_inches: player.height_inches,
+				weight_pounds: player.weight_pounds,
+			}));
 	} catch (error) {
 		console.error('Error fetching roster:', error);
 		throw error;
