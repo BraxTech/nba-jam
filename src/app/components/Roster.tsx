@@ -15,6 +15,7 @@ interface Player {
 	position: string;
 	height: string;
 	weight: string;
+	jersey_number: number;
 }
 
 export default function Roster({ teamName }: RosterProps) {
@@ -36,6 +37,7 @@ export default function Roster({ teamName }: RosterProps) {
 				<thead>
 					<tr className='text-left border-b border-gray-700'>
 						<th className='py-2 px-4 text-gray-300'>Name</th>
+						<th className='py-2 px-4 text-gray-300'>Number</th>
 						<th className='py-2 px-4 text-gray-300'>Position</th>
 						<th className='py-2 px-4 text-gray-300'>Height</th>
 						<th className='py-2 px-4 text-gray-300'>Weight</th>
@@ -78,6 +80,9 @@ export default function Roster({ teamName }: RosterProps) {
 								<td className='py-2 px-4 text-white'>
 									{player.first_name} {player.last_name}
 								</td>
+								<td className='py-2 px-4 text-gray-300'>
+									{player.jersey_number}
+								</td>
 								<td className='py-2 px-4 text-gray-300'>{player.position}</td>
 								<td className='py-2 px-4 text-gray-300'>{player.height}</td>
 								<td className='py-2 px-4 text-gray-300'>{player.weight}</td>
@@ -89,12 +94,3 @@ export default function Roster({ teamName }: RosterProps) {
 		</div>
 	);
 }
-
-const formatHeight = (feet?: number, inches?: number) => {
-	if (!feet || !inches) return '-';
-	return `${feet}'${inches}"`;
-};
-
-const formatWeight = (pounds?: number) => {
-	return pounds ? `${pounds} lbs` : '-';
-};
