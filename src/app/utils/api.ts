@@ -3,71 +3,39 @@ import axios from 'axios';
 const BASE_URL = 'https://api.balldontlie.io/v1';
 const API_KEY = process.env.NEXT_PUBLIC_BALL_DONT_LIE_API_KEY;
 
-const teamRecords: { [key: string]: { wins: number; losses: number } } = {
-	Bucks: { wins: 58, losses: 24 },
-	Celtics: { wins: 57, losses: 25 },
-	Nuggets: { wins: 53, losses: 29 },
-	'76ers': { wins: 54, losses: 28 },
-	Cavaliers: { wins: 51, losses: 31 },
-	Kings: { wins: 48, losses: 34 },
-	Knicks: { wins: 47, losses: 35 },
-	Nets: { wins: 45, losses: 37 },
-	Suns: { wins: 45, losses: 37 },
-	Heat: { wins: 44, losses: 38 },
-	Clippers: { wins: 44, losses: 38 },
-	Warriors: { wins: 44, losses: 38 },
-	Lakers: { wins: 43, losses: 39 },
-	Timberwolves: { wins: 42, losses: 40 },
-	Pelicans: { wins: 42, losses: 40 },
-	Hawks: { wins: 41, losses: 41 },
-	Thunder: { wins: 40, losses: 42 },
-	Raptors: { wins: 41, losses: 41 },
-	Bulls: { wins: 40, losses: 42 },
-	Jazz: { wins: 37, losses: 45 },
-	Pacers: { wins: 35, losses: 47 },
-	Magic: { wins: 34, losses: 48 },
-	'Trail Blazers': { wins: 33, losses: 49 },
-	Wizards: { wins: 35, losses: 47 },
-	Mavericks: { wins: 38, losses: 44 },
-	Hornets: { wins: 27, losses: 55 },
-	Rockets: { wins: 22, losses: 60 },
-	Spurs: { wins: 22, losses: 60 },
-	Pistons: { wins: 17, losses: 65 },
-	Grizzlies: { wins: 51, losses: 31 },
-};
-
-export const teamLogos: { [key: string]: string } = {
-	'Atlanta Hawks': '/images/placeholder-logo.png',
-	'Boston Celtics': '/images/placeholder-logo.png',
-	'Brooklyn Nets': '/images/placeholder-logo.png',
-	'Charlotte Hornets': '/images/placeholder-logo.png',
-	'Chicago Bulls': '/images/placeholder-logo.png',
-	'Cleveland Cavaliers': '/images/placeholder-logo.png',
-	'Dallas Mavericks': '/images/placeholder-logo.png',
-	'Denver Nuggets': '/images/placeholder-logo.png',
-	'Detroit Pistons': '/images/placeholder-logo.png',
-	'Golden State Warriors': '/images/placeholder-logo.png',
-	'Houston Rockets': '/images/placeholder-logo.png',
-	'Indiana Pacers': '/images/placeholder-logo.png',
-	'LA Clippers': '/images/placeholder-logo.png',
-	'Los Angeles Lakers': '/images/placeholder-logo.png',
-	'Memphis Grizzlies': '/images/placeholder-logo.png',
-	'Miami Heat': '/images/placeholder-logo.png',
-	'Milwaukee Bucks': '/images/placeholder-logo.png',
-	'Minnesota Timberwolves': '/images/placeholder-logo.png',
-	'New Orleans Pelicans': '/images/placeholder-logo.png',
-	'New York Knicks': '/images/placeholder-logo.png',
-	'Oklahoma City Thunder': '/images/placeholder-logo.png',
-	'Orlando Magic': '/images/placeholder-logo.png',
-	'Philadelphia 76ers': '/images/placeholder-logo.png',
-	'Phoenix Suns': '/images/placeholder-logo.png',
-	'Portland Trail Blazers': '/images/placeholder-logo.png',
-	'Sacramento Kings': '/images/placeholder-logo.png',
-	'San Antonio Spurs': '/images/placeholder-logo.png',
-	'Toronto Raptors': '/images/placeholder-logo.png',
-	'Utah Jazz': '/images/placeholder-logo.png',
-	'Washington Wizards': '/images/placeholder-logo.png',
-};
+export const teamRecords: { [key: string]: { wins: number; losses: number } } =
+	{
+		Bucks: { wins: 58, losses: 24 },
+		Celtics: { wins: 57, losses: 25 },
+		Nuggets: { wins: 53, losses: 29 },
+		'76ers': { wins: 54, losses: 28 },
+		Cavaliers: { wins: 51, losses: 31 },
+		Kings: { wins: 48, losses: 34 },
+		Knicks: { wins: 47, losses: 35 },
+		Nets: { wins: 45, losses: 37 },
+		Suns: { wins: 45, losses: 37 },
+		Heat: { wins: 44, losses: 38 },
+		Clippers: { wins: 44, losses: 38 },
+		Warriors: { wins: 44, losses: 38 },
+		Lakers: { wins: 43, losses: 39 },
+		Timberwolves: { wins: 42, losses: 40 },
+		Pelicans: { wins: 42, losses: 40 },
+		Hawks: { wins: 41, losses: 41 },
+		Thunder: { wins: 40, losses: 42 },
+		Raptors: { wins: 41, losses: 41 },
+		Bulls: { wins: 40, losses: 42 },
+		Jazz: { wins: 37, losses: 45 },
+		Pacers: { wins: 35, losses: 47 },
+		Magic: { wins: 34, losses: 48 },
+		'Trail Blazers': { wins: 33, losses: 49 },
+		Wizards: { wins: 35, losses: 47 },
+		Mavericks: { wins: 38, losses: 44 },
+		Hornets: { wins: 27, losses: 55 },
+		Rockets: { wins: 22, losses: 60 },
+		Spurs: { wins: 22, losses: 60 },
+		Pistons: { wins: 17, losses: 65 },
+		Grizzlies: { wins: 51, losses: 31 },
+	};
 
 export const teamColors: {
 	[key: string]: { primary: string; secondary: string };
@@ -103,6 +71,7 @@ export const teamColors: {
 	'Utah Jazz': { primary: '#002B5C', secondary: '#00471B' },
 	'Washington Wizards': { primary: '#002B5C', secondary: '#E31837' },
 };
+
 export async function getTeams() {
 	if (!API_KEY) {
 		throw new Error('API key is required');
@@ -119,33 +88,21 @@ export async function getTeams() {
 			next: { revalidate: 3600 },
 		});
 
+		if (response.status === 429) {
+			throw new Error('Rate limit exceeded. Please try again later.');
+		}
+
 		if (!response.ok) {
-			throw new Error(
-				`Failed to fetch teams: ${response.status} ${response.statusText}`
-			);
+			throw new Error(`Failed to fetch teams: ${response.status}`);
 		}
 
 		const data = await response.json();
-
-		const nbaTeams = data.data
-			.filter((team: any) => {
-				const nbaDivisions = [
-					'Atlantic',
-					'Central',
-					'Southeast',
-					'Northwest',
-					'Pacific',
-					'Southwest',
-				];
-				return nbaDivisions.includes(team.division);
-			})
+		return data.data
+			.filter((team: any) => team.conference !== '' && team.division !== '')
 			.map((team: any) => ({
 				...team,
 				record: teamRecords[team.name] || { wins: 0, losses: 0 },
-				logo: teamLogos[team.full_name] || '/images/placeholder-logo.png',
 			}));
-
-		return nbaTeams;
 	} catch (error) {
 		console.error('Error fetching teams:', error);
 		throw error;
@@ -167,24 +124,18 @@ export async function getTeamRoster(teamName: string) {
 			headers,
 		});
 
+		if (response.status === 429) {
+			throw new Error('Rate limit exceeded. Please try again later.');
+		}
+
 		if (!response.ok) {
-			throw new Error(
-				`Failed to fetch roster: ${response.status} ${response.statusText}`
-			);
+			throw new Error(`Failed to fetch roster: ${response.status}`);
 		}
 
 		const data = await response.json();
-		return data.data
-			.filter((player: any) => player.team.full_name === teamName)
-			.map((player: any) => ({
-				id: player.id,
-				first_name: player.first_name,
-				last_name: player.last_name,
-				position: player.position,
-				height_feet: player.height_feet,
-				height_inches: player.height_inches,
-				weight_pounds: player.weight_pounds,
-			}));
+		return data.data.filter(
+			(player: any) => player.team.full_name === teamName
+		);
 	} catch (error) {
 		console.error('Error fetching roster:', error);
 		throw error;

@@ -1,15 +1,18 @@
 'use client';
 
 import { useState } from 'react';
-import { getTeams, teamColors } from '@/app/utils/api';
+import { getTeams } from '@/app/utils/api';
 import { useFetch } from '@/app/hooks/useFetch';
 import TeamCard from '@/app/components/TeamCard';
 import Roster from '@/app/components/Roster';
 
+// Move fetch function outside component
+const fetchTeams = () => getTeams();
+
 export default function HomePage() {
 	const [selectedTeam, setSelectedTeam] = useState<string | null>(null);
 	const [isRosterChanging, setIsRosterChanging] = useState(false);
-	const { data: teams, loading, error } = useFetch(getTeams);
+	const { data: teams, loading, error } = useFetch(fetchTeams);
 
 	const divisions = teams?.reduce((acc: any, team: any) => {
 		if (!acc[team.division]) {

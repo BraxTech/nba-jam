@@ -2,6 +2,7 @@
 
 import { getTeamRoster } from '@/app/utils/api';
 import { useFetch } from '@/app/hooks/useFetch';
+import { useMemo } from 'react';
 
 interface RosterProps {
 	teamName: string;
@@ -12,26 +13,17 @@ interface Player {
 	first_name: string;
 	last_name: string;
 	position: string;
-	height_feet?: number;
-	height_inches?: number;
-	weight_pounds?: number;
+	height: string;
+	weight: string;
 }
 
 export default function Roster({ teamName }: RosterProps) {
-	const {
-		data: players,
-		loading,
-		error,
-	} = useFetch(() => getTeamRoster(teamName));
+	const fetchRosterFn = useMemo(
+		() => () => getTeamRoster(teamName),
+		[teamName]
+	);
 
-	const formatHeight = (feet?: number, inches?: number) => {
-		if (!feet || !inches) return '-';
-		return `${feet}'${inches}"`;
-	};
-
-	const formatWeight = (pounds?: number) => {
-		return pounds ? `${pounds} lbs` : '-';
-	};
+	const { data: players, loading, error } = useFetch(fetchRosterFn);
 
 	if (error)
 		return (
@@ -87,12 +79,8 @@ export default function Roster({ teamName }: RosterProps) {
 									{player.first_name} {player.last_name}
 								</td>
 								<td className='py-2 px-4 text-gray-300'>{player.position}</td>
-								<td className='py-2 px-4 text-gray-300'>
-									{formatHeight(player.height_feet, player.height_inches)}
-								</td>
-								<td className='py-2 px-4 text-gray-300'>
-									{formatWeight(player.weight_pounds)}
-								</td>
+								<td className='py-2 px-4 text-gray-300'>{player.height}</td>
+								<td className='py-2 px-4 text-gray-300'>{player.weight}</td>
 							</tr>
 						))
 					)}
@@ -101,3 +89,12 @@ export default function Roster({ teamName }: RosterProps) {
 		</div>
 	);
 }
+
+const formatHeight = (feet?: number, inches?: number) => {
+	if (!feet || !inches) return '-';
+	return `${feet}'${inches}"`;
+};
+
+const formatWeight = (pounds?: number) => {
+	return pounds ? `${pounds} lbs` : '-';
+};
