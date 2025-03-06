@@ -1,7 +1,13 @@
 import axios from 'axios';
 
 const BASE_URL = 'https://api.balldontlie.io/v1';
-const API_KEY = process.env.BALL_DONT_LIE_API_KEY;
+const API_KEY = process.env.NEXT_PUBLIC_BALL_DONT_LIE_API_KEY;
+
+if (!API_KEY) {
+	console.warn('API key is missing!');
+} else {
+	console.log('API key length:', API_KEY.length);
+}
 
 const teamRecords: { [key: string]: { wins: number; losses: number } } = {
 	Bucks: { wins: 58, losses: 24 },
@@ -103,14 +109,20 @@ export const teamColors: {
 	'Utah Jazz': { primary: '#002B5C', secondary: '#00471B' },
 	'Washington Wizards': { primary: '#002B5C', secondary: '#E31837' },
 };
-
+console.log(API_KEY);
 export async function getTeams() {
+	if (!API_KEY) {
+		throw new Error('API key is required');
+	}
+
 	try {
+		const headers: HeadersInit = {
+			Authorization: API_KEY,
+		};
+
 		const response = await fetch(`${BASE_URL}/teams`, {
 			method: 'GET',
-			headers: {
-				Authorization: 'eec3dbf8-a114-4210-be65-490929f19a1c',
-			},
+			headers,
 			next: { revalidate: 3600 },
 		});
 
@@ -147,27 +159,41 @@ export async function getTeams() {
 	}
 }
 
-export const getPlayers = async () => {
-	const response = await axios.get(`${BASE_URL}/players`);
-	return response.data;
-};
+export async function getTeamRoster(teamName: string) {
+	if (!API_KEY) {
+		throw new Error('API key is required');
+	}
 
-export const getPlayerById = async (id: string) => {
-	const response = await axios.get(`${BASE_URL}/players/${id}`);
-	return response.data;
-};
+	try {
+		const headers: HeadersInit = {
+			Authorization: API_KEY,
+		};
 
-export const getPlayerStats = async (id: string) => {
-	const response = await axios.get(`${BASE_URL}/players/${id}/stats`);
-	return response.data;
-};
+		const response = await fetch(`${BASE_URL}/players?per_page=100`, {
+			method: 'GET',
+			headers,
+		});
 
-export const getTeamStats = async (id: string) => {
-	const response = await axios.get(`${BASE_URL}/teams/${id}/stats`);
-	return response.data;
-};
+		if (!response.ok) {
+			throw new Error(
+				`Failed to fetch roster: ${response.status} ${response.statusText}`
+			);
+		}
 
-export const getTeamById = async (id: string) => {
-	const response = await axios.get(`${BASE_URL}/teams/${id}`);
-	return response.data;
-};
+		const data = await response.json();
+		return data.data
+			.filter((player: any) => player.team.full_name === teamName)
+			.map((player: any) => ({
+				id: player.id,
+				first_name: player.first_name,
+				last_name: player.last_name,
+				position: player.position,
+				height_feet: player.height_feet,
+				height_inches: player.height_inches,
+				weight_pounds: player.weight_pounds,
+			}));
+	} catch (error) {
+		console.error('Error fetching roster:', error);
+		throw error;
+	}
+}

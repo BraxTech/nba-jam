@@ -5,15 +5,23 @@ import { teamColors } from '@/app/utils/api';
 interface TeamCardProps {
 	name: string;
 	full_name: string;
+	conference: string;
 	record: any;
+	onClick: () => void;
+	isSelected: boolean;
 }
 
 export default function TeamCard({
 	full_name,
+	conference,
 	record = { wins: 0, losses: 0 },
+	onClick,
+	isSelected,
 }: TeamCardProps) {
 	return (
-		<div className='relative group'>
+		<div
+			className={`relative group ${isSelected ? 'bg-gray-700' : ''}`}
+			onClick={onClick}>
 			<div
 				className='absolute left-0 top-0 w-1 h-full opacity-0 group-hover:opacity-100 transition-opacity duration-200'
 				style={{ backgroundColor: teamColors[full_name]?.primary }}
